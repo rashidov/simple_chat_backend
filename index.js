@@ -48,6 +48,15 @@ io.on('connection', async socket => {
     rooms.get(roomId).get('messages').unshift(msg)
     socket.to(roomId).emit('ROOM:NEW_MESSAGE', msg)
   })
+
+  socket.on('disconnect', () => {
+    rooms.forEach((value, roomId) => {
+      if (value.get('users').delete(socket.id)) {
+        const users = [...value.get('users').values()]
+        socket.to(roomId).emit('ROOM:JOINED', users)
+      }
+    })
+  })
 })
 
 server.listen(PORT, () => {
